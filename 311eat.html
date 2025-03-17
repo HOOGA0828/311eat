@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>報名名單查詢</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+        background: #f0f2f5;
+        color: #333;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      h2 {
+        text-align: center;
+        font-size: 28px;
+        color: #1e2a44;
+        margin-bottom: 10px;
+      }
+
+      .totalCount {
+        text-align: center;
+        font-size: 16px;
+        color: #636e72;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .totalCount:hover {
+        color: #0984e3;
+      }
+
+      .loading {
+        text-align: center;
+        font-size: 18px;
+        color: #636e72;
+        padding: 20px;
+        display: none;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+
+      .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 800px;
+        height: 80%;
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        overflow-y: auto;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 24px;
+        color: #636e72;
+        cursor: pointer;
+        border: none;
+        background: none;
+        transition: color 0.2s;
+      }
+
+      .modal-close:hover {
+        color: #e74c3c;
+      }
+
+      .modal-content ul {
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .modal-content li {
+        width: 200px;
+        margin-bottom: 0;
+        padding: 12px 15px;
+        font-size: 16px;
+        color: #2d3436;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: transform 0.2s;
+      }
+
+      .modal-content li:hover {
+        transform: translateY(-3px);
+      }
+
+      label {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #2d3436;
+        font-weight: 500;
+      }
+
+      select {
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #dfe6e9;
+        background: #fff;
+        margin-bottom: 25px;
+        transition: border-color 0.2s;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: #0984e3;
+      }
+
+      .section-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .section-title h3 {
+        margin: 0;
+        font-size: 20px;
+        color: #1e2a44;
+      }
+
+      .dayCount {
+        font-size: 14px;
+        color: #fff;
+        background: #00b894;
+        padding: 6px 12px;
+        border-radius: 20px;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        background: #f8f9fa;
+        margin-bottom: 12px;
+        padding: 12px 15px;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: transform 0.2s;
+      }
+
+      li:hover {
+        transform: translateX(5px);
+      }
+
+      .empty {
+        text-align: center;
+        color: #b2bec3;
+        font-size: 16px;
+        padding: 20px 0;
+      }
+
+      @media screen and (max-width: 480px) {
+        .container {
+          margin: 20px;
+          padding: 20px;
+        }
+        h2 {
+          font-size: 24px;
+        }
+        select {
+          font-size: 15px;
+        }
+        li {
+          font-size: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>報名名單查詢</h2>
+      <div class="totalCount" id="totalCount" onclick="showModal()">
+        目前填表人數：<span id="totalNumber">0</span> 人（點我查看名單）
+      </div>
+      <div class="loading" id="loading">LOADING....</div>
+
+      <label for="dateSelect">請選擇日期：</label>
+      <select id="dateSelect">
+        <option value="4/3">4/3</option>
+        <option value="4/4">4/4</option>
+        <option value="4/5">4/5</option>
+        <option value="4/6">4/6</option>
+      </select>
+
+      <div class="section-title">
+        <h3>參加者名單</h3>
+        <div class="dayCount" id="dayCount">參加人數：0 人</div>
+      </div>
+
+      <ul id="nameList"></ul>
+      <div id="emptyMsg" class="empty" style="display: none">無人參加</div>
+    </div>
+
+    <div class="modal" id="nameModal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="hideModal()">✕</button>
+        <h3>所有填表人名單</h3>
+        <ul id="allNamesList"></ul>
+      </div>
+    </div>
+
+    <script>
+      // JavaScript 部分保持不變
+      const apiUrl = "https://script.google.com/macros/s/AKfycbx2MKabmtgSWvN5Pae2PUduWK0v7C2de9F1F-4a03zrG2ut4r99BS9N6lvDMBMbItElRQ/exec";
+      let dataMap = {};
+      let allNameSet = new Set();
+
+      async function fetchData() {
+        const loading = document.getElementById("loading");
+        loading.style.display = "block";
+
+        try {
+          const res = await fetch(apiUrl);
+          const data = await res.json();
+          dataMap = data;
+
+          const allNamesList = document.getElementById("allNamesList");
+          allNameSet = new Set();
+
+          Object.values(dataMap).forEach((arr) => {
+            arr.forEach((name) => allNameSet.add(name));
+          });
+
+          document.getElementById("totalNumber").textContent = allNameSet.size;
+
+          allNamesList.innerHTML = "";
+          Array.from(allNameSet).forEach((name) => {
+            const li = document.createElement("li");
+            li.textContent = name;
+            allNamesList.appendChild(li);
+          });
+
+          updateNameList();
+        } catch (err) {
+          console.error("資料載入錯誤", err);
+        } finally {
+          loading.style.display = "none";
+        }
+      }
+
+      function updateNameList() {
+        const selectedDate = document.getElementById("dateSelect").value;
+        const list = document.getElementById("nameList");
+        const emptyMsg = document.getElementById("emptyMsg");
+        const dayCount = document.getElementById("dayCount");
+
+        list.innerHTML = "";
+        const names = dataMap[selectedDate] || [];
+
+        dayCount.textContent = `參加人數：${names.length} 人`;
+
+        if (names.length === 0) {
+          emptyMsg.style.display = "block";
+        } else {
+          emptyMsg.style.display = "none";
+          names.forEach((name) => {
+            const li = document.createElement("li");
+            li.textContent = name;
+            list.appendChild(li);
+          });
+        }
+      }
+
+      function showModal() {
+        document.getElementById("nameModal").style.display = "block";
+      }
+
+      function hideModal() {
+        document.getElementById("nameModal").style.display = "none";
+      }
+
+      document
+        .getElementById("dateSelect")
+        .addEventListener("change", updateNameList);
+      fetchData();
+    </script>
+  </body>
+</html>

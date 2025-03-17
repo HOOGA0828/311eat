@@ -1,0 +1,48 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script src="./js/string_to_buffer.js"></script>
+	<script src="./js/jquery-3.3.1.min.js"></script>
+	<script src="./js/forge.all.min.js"></script>
+	<script src="./js/forgeutil.js"></script>
+	<script src="./js/signatureutil.js"></script>
+	<script src="./js/ecc.js"></script>
+	<style type="text/css">
+		button {
+			 width: 22%
+		}
+		input {
+			width: 90%
+		}
+	</style>
+</head>
+<body>
+	<p>
+		RSA Public Key:<input type="text" id="rsaPublic" placeholder="RSA Public Key"/></br>
+		RSA Private Key:<input type="text" id="rsaPrivate" placeholder="RSA Private Key"/></br>
+		ECC Public Key:<input type="text" id="eccPublic" placeholder="ECC Public Key"/></br>
+		ECC Private Key:<input type="text" id="eccPrivate" placeholder="ECC Private Key"/></br>
+		<textarea id="msg" style="width: 90%; height: 140px" placeholder="message" autofocus>{
+  "id": 123,
+  "message": "配對系統掛了",
+  "encryption": "使用forge進行AES/RSA加密後使用WebCrypto做ECC簽章並自行轉換簽章格式"
+}</textarea>
+	</p>
+	<p style="padding-left: 1%;">
+		<button onclick="encryptPayload();">Encrypt</button>
+		<button onclick="decryptPayload();">Decrypt</button>
+		<button onclick="generateKeys();">Generate</button>
+		<button onclick="clearAll();">Clear</button>
+	</p>
+	<textarea id="result" style="width: 90%; height: 140px" placeholder="result"></textarea>
+	<textarea id="log" style="width: 90%; height: 140px" placeholder="log" readonly></textarea>
+	<script type="text/javascript">
+		document.getElementById("rsaPrivate").value = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC11YqgI5Fm2DBGgCmhqJ6Jv7/mZ695lujVJ/Wvbeah+lglX34vGPIjKCBsKtc8Nhraq7fA+HKQ5cVIOFnJkA28DdlpbXK1r6Dpv9zVuSBITHoZ67nqD1ETuPVhwvMw3mN/8iFpQ1l7d8vaFFFDpRzEiymRD/C6hoGzxwMY//eB4NVOn+usNUBGzA7e9P+F9O1IxjngNJJKjNXPxQtzVr1h8qSbknmC6swqGNLXw4gQWKDC5lbsGnvI0HU+3WFDcrLqlyOyVF6hW4HjXrG78gBtV/c33SuGPf77ogTyLlNFCyqJ/F43qWK5laYDzkcs65maAdADsec6vqBFT/6dy7vXAgMBAAECggEAVRzeFSRg+J9kRXPTSODJSNgxBrPs7sClPrVEKrgKNzKcFO5Ufc4y9SLgvlD1S7FVs5qiWhjRY6KxzCLYYGFmFGr1JAS/p2zMqO2OfJn5ku39T2nILde6jz1J2tdqhyrpryeS3RdR6NnD2VIeUcgVJaiwLb8k4uJ4DsMuX4LdA3UDfh0hrQ/ppG0WhvVC4WvD/ah3ZhOP1WOnMRSuZWMfS7wUriMIu2JQnChRLpGVyy6jMxaDm9wXlyAwVml7//kJl2s0isw57UIiJygarLmh7f9iyanjl0h597zmve5HAxFoQ3+m1hDeo8Dd3X1x96kU95QEO9aCOgbndwzEtvXxjQKBgQDyMpEuuLtAGmwOnuuPqqIUKhPUVFbRo51oEsq3MVk5rW3i8qKDYkrs3Y8sCk2YQHtoHLUShlPI3N31DevVRzU5QoE0U825QXxenqD8AGGeXIXVb0ieWFUiBEsubo4tA0DvzPJ71Uhq3ENk6YFBCyy7VImc02RdnkhY1jFFvVbYcwKBgQDAMlRp21d2ashEAytKVu9YcDZv9OHFgEOSd6jwZz8/aN3czx1X7Mi2pmUMAmRJtTboWJoEnduqoQJ5Qnt8CtGdFhbHOZE1hkrNr8P1KEC6MY5kWjSybBwRIDCXoGMRTblk/rDMCuHg0pKcch5UOqFiPpF3ammNOn9Jpmve8gjKDQKBgQCJHgXBzMX+GbdZY7F7CaBvCA9n40OvthCUbickJaUdGUmf9bv54/kFNr4qsb6SVtdG7xG4ZiIjEp/6b6I3gfPo8fTSGivbGO7/ZpE/ejvJ+xmt5y3Wr62q74FczSxi4XevC3mwj+RK0164T9Zka54shETQa4Fj2wucd883a2UybwKBgDDX2Yn5WxXV90UJhSPkSfkwszTqh8HYYdPEIyPNKU6lCNUHsY5Zt3xrdvyBUxlEO0r60VFhCKUpO+azFYyldzWzmmBQ6e0vTq1NAMC51RE8bNJl9kRtowhbJN4zvVl1ZisbarTAAz1OZkHp4nlHWSINgoxVd7OTbSu7ZmiHG+K1AoGBALcALWcQZxg1OYgoJvF0ALw3OIuZrDhhmBauQH8KAlrGPc86m1jdGIoFbFUcp30JFgp7x60JW2uk4gJlE84HdBZGIHQMRs4mQeksC4lC3pws/b5mvtjP1gssl0g60CqH5SM7gbGfJpKXxdOA8nRSQl3o51LDhnjdLYnup7pA0Evo";
+		document.getElementById("rsaPublic").value = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtdWKoCORZtgwRoApoaieib+/5meveZbo1Sf1r23mofpYJV9+LxjyIyggbCrXPDYa2qu3wPhykOXFSDhZyZANvA3ZaW1yta+g6b/c1bkgSEx6Geu56g9RE7j1YcLzMN5jf/IhaUNZe3fL2hRRQ6UcxIspkQ/wuoaBs8cDGP/3geDVTp/rrDVARswO3vT/hfTtSMY54DSSSozVz8ULc1a9YfKkm5J5gurMKhjS18OIEFigwuZW7Bp7yNB1Pt1hQ3Ky6pcjslReoVuB416xu/IAbVf3N90rhj3++6IE8i5TRQsqifxeN6liuZWmA85HLOuZmgHQA7HnOr6gRU/+ncu71wIDAQAB";
+		document.getElementById("eccPrivate").value = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgb1bBKr4OxnvpHVE9ZyzE5LgyzfGxhT+AVbPwov/UpzOhRANCAAQtG29HKFlPRpivPZTxRh7q3dm+fFnN01f6t7opXFVznN1uXGP9fXABUIIQlNwxa8Tka8bULizwcaT/tvbNVYcq";
+		document.getElementById("eccPublic").value = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELRtvRyhZT0aYrz2U8UYe6t3ZvnxZzdNX+re6KVxVc5zdblxj/X1wAVCCEJTcMWvE5GvG1C4s8HGk/7b2zVWHKg==";
+		// document.getElementById("eccPrivate").value = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgKqxza2RvQMsd+4W3SztniFTW3relhADeqHKC8aLKD9ChRANCAAQ687f4nz1IeCwjGcHdyhF7V1nIy9dLY050NrfA0A/jcGaAy3t9oKpj2l+1bxdF3rOfAIPxlmktQVXvCGar6LYH";
+		// document.getElementById("eccPublic").value = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOvO3+J89SHgsIxnB3coRe1dZyMvXS2NOdDa3wNAP43BmgMt7faCqY9pftW8XRd6znwCD8ZZpLUFV7whmq+i2Bw==";
+	</script>
+</body>
+</html>
