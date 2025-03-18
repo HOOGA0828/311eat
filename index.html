@@ -108,9 +108,13 @@
         max-height: 60%;
       }
 
+      .nameListWrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
       .modal-content li {
-        /* width: 200px; */
-        margin-bottom: 0;
         padding: 12px 15px;
         font-size: 16px;
         color: #2d3436;
@@ -123,27 +127,32 @@
         transform: translateY(-3px);
       }
 
-      label {
-        display: block;
-        font-size: 16px;
-        margin-bottom: 10px;
-        color: #2d3436;
-        font-weight: 500;
+      /* 新增的 tab 樣式 */
+      .tab-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
       }
 
-      select {
-        width: 100%;
+      .tab {
+        flex: 1;
         padding: 12px 15px;
         font-size: 16px;
+        text-align: center;
+        background: #f8f9fa;
         border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
         border: 1px solid #dfe6e9;
-        background: #fff;
-        margin-bottom: 25px;
-        transition: border-color 0.2s;
       }
 
-      select:focus {
-        outline: none;
+      .tab:hover {
+        background: #e9ecef;
+      }
+
+      .tab.active {
+        background: #0984e3;
+        color: #fff;
         border-color: #0984e3;
       }
 
@@ -201,7 +210,7 @@
         h2 {
           font-size: 24px;
         }
-        select {
+        .tab {
           font-size: 15px;
         }
         li {
@@ -218,20 +227,20 @@
       </div>
       <div class="loading" id="loading">LOADING....</div>
 
-      <label for="dateSelect">請選擇日期：</label>
-      <select id="dateSelect">
-        <option value="4/3">4/3</option>
-        <option value="4/4">4/4</option>
-        <option value="4/5">4/5</option>
-        <option value="4/6">4/6</option>
-      </select>
+      <!-- 替換 select 為 tab -->
+      <div class="tab-container" id="dateTabs">
+        <div class="tab active" data-date="4/3">4/3</div>
+        <div class="tab" data-date="4/4">4/4</div>
+        <div class="tab" data-date="4/5">4/5</div>
+        <div class="tab" data-date="4/6">4/6</div>
+      </div>
 
       <div class="section-title">
         <h3>參加者名單</h3>
         <div class="dayCount" id="dayCount">參加人數：0 人</div>
       </div>
 
-      <ul id="nameList"></ul>
+      <ul id="nameList" class="nameListWrapper"></ul>
       <div id="emptyMsg" class="empty" style="display: none">無人參加</div>
     </div>
 
@@ -246,11 +255,11 @@
     </div>
 
     <script>
-      // JavaScript 部分保持不變
       const apiUrl =
         "https://script.google.com/macros/s/AKfycbx2MKabmtgSWvN5Pae2PUduWK0v7C2de9F1F-4a03zrG2ut4r99BS9N6lvDMBMbItElRQ/exec";
       let dataMap = {};
       let allNameSet = new Set();
+      let selectedDate = "4/3"; // 預設選擇第一個日期
 
       async function fetchData() {
         const loading = document.getElementById("loading");
@@ -286,7 +295,6 @@
       }
 
       function updateNameList() {
-        const selectedDate = document.getElementById("dateSelect").value;
         const list = document.getElementById("nameList");
         const emptyMsg = document.getElementById("emptyMsg");
         const dayCount = document.getElementById("dayCount");
@@ -316,9 +324,21 @@
         document.getElementById("nameModal").style.display = "none";
       }
 
-      document
-        .getElementById("dateSelect")
-        .addEventListener("change", updateNameList);
+      // tab 切換功能
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          // 移除所有 tab 的 active 類
+          tabs.forEach((t) => t.classList.remove("active"));
+          // 為點擊的 tab 添加 active 類
+          tab.classList.add("active");
+          // 更新選中的日期
+          selectedDate = tab.getAttribute("data-date");
+          // 更新名單
+          updateNameList();
+        });
+      });
+
       fetchData();
     </script>
   </body>
